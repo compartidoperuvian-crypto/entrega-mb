@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Seguimiento de entregas - Mas Belleza</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root{
+    --paper:#F5F4EF; --line:#DEDBCF; --ink:#2C2A22; --ink-soft:#7A7669;
+    --moss:#5C7A3B; --moss-bg:#EAF3DE; --amber:#B0782F; --amber-bg:#FAEEDA;
+    --blue:#0C447C; --blue-bg:#E6F1FB;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; padding:16px; max-width:640px; margin:0 auto;}
+  h1{font-size:17px; font-weight:600; margin:0 0 4px;}
+  .sub{font-size:12px; color:var(--ink-soft); margin:0 0 18px;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px;}
+  .lote-titulo{font-size:14px; font-weight:600; margin:0;}
+  .barra{height:6px; background:var(--line); border-radius:4px; overflow:hidden; margin:8px 0 4px;}
+  .barra-fill{height:100%; background:var(--moss);}
+  .progreso{font-size:12px; color:var(--ink-soft); margin-bottom:10px;}
+  .fila-entrega{padding:8px 0; border-top:1px solid var(--line); font-size:13px;}
+  .stamp{font-size:11px; font-weight:600; padding:2px 8px; border-radius:6px;}
+  .stamp.registrado{background:var(--paper); color:var(--ink-soft);}
+  .stamp.en_servicio{background:var(--amber-bg); color:var(--amber);}
+  .stamp.culminado{background:var(--moss-bg); color:var(--moss);}
+  .thumbs{display:flex; gap:6px; margin-top:6px;}
+  .thumbs img{width:50px; height:50px; object-fit:cover; border-radius:6px; border:1px solid var(--line);}
+  .empty{text-align:center; color:var(--ink-soft); font-size:13px; padding:40px 0;}
+</style>
+</head>
+<body>
+
+<h1>Seguimiento de entregas</h1>
+<p class="sub">Mas Belleza · Peruvian Logistics International</p>
+<div id="app"></div>
+
+<script>
+const SUPABASE_URL = 'https://wvnzifxqssisbkgfjgrx.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_Gk94nITpyOHtHDa-Y8HYSA_RLLMUGii';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const app = document.getElementById('app');
+
+function fmtFecha(fechaISO){
+  if(!fechaISO) return '';
+  const [aaaa, mm, dd] = fechaISO.split('-');
+  return `${dd}/${mm}/${aaaa}`;
+}
+
+async function cargar(){
+  const { data, error } = await sb.from('lotes')
+    .select(`id, codigo, fecha_programada, estado,
+      entregas_mb ( id, guia_remitente, estado, distrito_destino, tienda_entrega, entregado_at, receptor_nombre, foto_guia_urls, foto_evidencia_url )`)
+    .order('fecha_programada', { ascending: false });
+  if(error){ app.innerHTML = `<p>Error al cargar: ${error.message}</p>`; return; }
+
+  if(!data || data.length===0){ app.innerHTML = '<div class="empty">Todavía no hay entregas registradas.</div>'; return; }
+
+  app.innerHTML = data.map(lote=>{
+    const entregas = lote.entregas_mb || [];
+    const entregadas = entregas.filter(e=>e.estado==='culminado').length;
+    const total = entregas.length;
+    const pct = total ? Math.round(entregadas/total*100) : 0;
+    return `
+      <div class="card">
+        <p class="lote-titulo">${lote.codigo} · ${fmtFecha(lote.fecha_programada)}</p>
+        <div class="barra"><div class="barra-fill" style="width:${pct}%;"></div></div>
+        <p class="progreso">${entregadas} de ${total} entregadas</p>
+        ${entregas.map(e=>`
+          <div class="fila-entrega">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>${e.guia_remitente || 'sin N°'} · ${e.tienda_entrega || e.distrito_destino || '—'}</span>
+              <span class="stamp ${e.estado}">${e.estado}</span>
+            </div>
+            ${e.estado==='culminado' ? `
+              <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
+                Recibió: ${e.receptor_nombre || '—'}
+              </div>
+              <div class="thumbs">
+                ${(e.foto_guia_urls||[]).map(u=>`<a href="${u}" target="_blank"><img src="${u}"></a>`).join('')}
+                ${e.foto_evidencia_url ? `<a href="${e.foto_evidencia_url}" target="_blank"><img src="${e.foto_evidencia_url}"></a>` : ''}
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+cargar();
+</script>
+</body>
+</html>
