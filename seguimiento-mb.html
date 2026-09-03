@@ -36,6 +36,18 @@
 <p class="sub">Mas Belleza · Peruvian Logistics International</p>
 <div id="app"></div>
 
+<div id="foto-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:999; padding:16px;">
+  <div style="background:#fff; border-radius:12px; padding:14px; max-width:min(92vw,480px); text-align:center;">
+    <img id="foto-grande-img" src="" alt="Foto" style="max-width:100%; max-height:65vh; border-radius:8px; margin-bottom:14px;">
+    <div style="display:flex; gap:8px;">
+      <button id="foto-cerrar" style="flex:1; padding:10px; border:1px solid var(--line); border-radius:8px; background:#fff;">Cerrar</button>
+      <a id="foto-descargar" download style="flex:1; padding:10px; border:1px solid var(--line); border-radius:8px; text-decoration:none; color:var(--ink); text-align:center;">Descargar</a>
+      <button id="foto-compartir" style="flex:1; padding:10px; border:none; border-radius:8px; background:var(--ink); color:#fff;">Compartir</button>
+    </div>
+  </div>
+</div>
+
+
 <script>
 const SUPABASE_URL = 'https://wvnzifxqssisbkgfjgrx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Gk94nITpyOHtHDa-Y8HYSA_RLLMUGii';
@@ -78,8 +90,8 @@ async function cargar(){
                 Recibió: ${e.receptor_nombre || '—'}
               </div>
               <div class="thumbs">
-                ${(e.foto_guia_urls||[]).map(u=>`<a href="${u}" target="_blank"><img src="${u}"></a>`).join('')}
-                ${e.foto_evidencia_url ? `<a href="${e.foto_evidencia_url}" target="_blank"><img src="${e.foto_evidencia_url}"></a>` : ''}
+                ${(e.foto_guia_urls||[]).map(u=>`<img src="${u}" onclick="verFotoGrande('${u}')" style="cursor:pointer;">`).join('')}
+                ${e.foto_evidencia_url ? `<img src="${e.foto_evidencia_url}" onclick="verFotoGrande('${e.foto_evidencia_url}')" style="cursor:pointer;">` : ''}
               </div>
             ` : ''}
           </div>
@@ -88,6 +100,28 @@ async function cargar(){
     `;
   }).join('');
 }
+
+function verFotoGrande(url){
+  document.getElementById('foto-grande-img').src = url;
+  document.getElementById('foto-descargar').href = url;
+  document.getElementById('foto-overlay').style.display = 'flex';
+}
+document.getElementById('foto-cerrar').addEventListener('click', ()=>{
+  document.getElementById('foto-overlay').style.display = 'none';
+});
+document.getElementById('foto-compartir').addEventListener('click', async ()=>{
+  const url = document.getElementById('foto-grande-img').src;
+  try{
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    const file = new File([blob], 'evidencia.jpg', { type: blob.type || 'image/jpeg' });
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      await navigator.share({ files: [file], title: 'Evidencia de entrega' });
+      return;
+    }
+  }catch(e){ /* sigue al respaldo de abajo */ }
+  window.open(url, '_blank');
+});
 
 cargar();
 </script>
