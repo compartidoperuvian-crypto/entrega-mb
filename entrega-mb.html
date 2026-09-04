@@ -22,6 +22,11 @@
   .foto-btn{flex:1; min-width:100px; height:130px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:1px dashed var(--ink-soft); border-radius:8px; background:var(--paper); font-size:10px; color:var(--ink-soft); cursor:pointer; overflow:hidden; padding:0;}
   .foto-btn.lista{border-style:solid; border-color:var(--moss); color:var(--moss);}
   .foto-btn img{width:100%; height:100%; object-fit:cover;}
+  .foto-guia-item{margin-bottom:10px; padding:8px; border:1px solid var(--line); border-radius:8px;}
+  .foto-guia-nombre{font-size:12px; font-weight:600; margin-bottom:6px;}
+  .foto-guia-thumbs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;}
+  .foto-guia-thumbs img{width:56px; height:56px; object-fit:cover; border-radius:6px; border:1px solid var(--line);}
+  .btn-add-foto{font-size:11px; padding:6px 10px; border:1px dashed var(--ink-soft); border-radius:6px; background:var(--paper); color:var(--ink-soft); cursor:pointer;}
   .foto-merc-btn{width:100%; height:80px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; border:1px dashed var(--ink-soft); border-radius:8px; background:var(--paper); font-size:12px; color:var(--ink-soft); cursor:pointer; overflow:hidden; padding:0;}
   .foto-merc-btn.lista{border-style:solid; border-color:var(--moss); color:var(--moss);}
   .foto-merc-btn img{width:100%; height:100%; object-fit:cover;}
@@ -42,7 +47,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const app = document.getElementById('app');
 let choferActual = JSON.parse(localStorage.getItem('chofer_mb') || 'null');
-const fotosGuiaSeleccionadas = {}; // { entregaId: File }
+const fotosGuiaSeleccionadas = {}; // { entregaId: File[] }
 
 async function init(){
   if(!choferActual){
@@ -101,8 +106,14 @@ async function mostrarEntregas(){
             <span>${e.guia_remitente || 'sin N°'}</span>
           </label>
         `).join('')}
-        <div class="fotos-guia">
-          ${lista.map(e=>`<button type="button" class="foto-btn" data-entrega-id="${e.id}"><span>Foto</span><span>${e.guia_remitente || '—'}</span></button>`).join('')}
+        <div class="fotos-guia-lista">
+          ${lista.map(e=>`
+            <div class="foto-guia-item">
+              <div class="foto-guia-nombre">${e.guia_remitente || 'sin N°'}</div>
+              <div class="foto-guia-thumbs" id="thumbs-${e.id}"></div>
+              <button type="button" class="btn-add-foto" data-entrega-id="${e.id}">+ Foto de esta guía</button>
+            </div>
+          `).join('')}
         </div>
         <input type="file" accept="image/*" capture="environment" class="input-foto-guia" style="display:none;">
         <div style="font-size:12px; font-weight:600; margin:10px 0 6px;">Foto de la mercadería entregada</div>
@@ -125,7 +136,12 @@ async function mostrarEntregas(){
   document.querySelectorAll('.grupo-tienda').forEach(grupo=>{
     const inputFotoGuia = grupo.querySelector('.input-foto-guia');
     let entregaIdActivo = null;
-    grupo.querySelectorAll('.foto-btn').forEach(btn=>{
+    const pintarThumbs = (entregaId) => {
+      const cont = grupo.querySelector(`#thumbs-${entregaId}`);
+      const archivos = fotosGuiaSeleccionadas[entregaId] || [];
+      cont.innerHTML = archivos.map(f=>`<img src="${URL.createObjectURL(f)}" alt="Foto de la guía">`).join('');
+    };
+    grupo.querySelectorAll('.btn-add-foto').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         entregaIdActivo = btn.dataset.entregaId;
         inputFotoGuia.click();
@@ -133,10 +149,10 @@ async function mostrarEntregas(){
     });
     inputFotoGuia.addEventListener('change', ()=>{
       if(inputFotoGuia.files[0] && entregaIdActivo){
-        fotosGuiaSeleccionadas[entregaIdActivo] = inputFotoGuia.files[0];
-        const btn = grupo.querySelector(`.foto-btn[data-entrega-id="${entregaIdActivo}"]`);
-        btn.classList.add('lista');
-        btn.innerHTML = `<img src="${URL.createObjectURL(inputFotoGuia.files[0])}" alt="Foto de la guía">`;
+        if(!fotosGuiaSeleccionadas[entregaIdActivo]) fotosGuiaSeleccionadas[entregaIdActivo] = [];
+        fotosGuiaSeleccionadas[entregaIdActivo].push(inputFotoGuia.files[0]);
+        pintarThumbs(entregaIdActivo);
+        inputFotoGuia.value = '';
       }
     });
 
@@ -165,16 +181,17 @@ async function mostrarEntregas(){
       try{
         const fotoMercUrl = await subirFoto(grupo._fotoMercaderia);
         for(const id of seleccionadas){
-          let fotoGuiaUrl = null;
-          if(fotosGuiaSeleccionadas[id]){
-            fotoGuiaUrl = await subirFoto(fotosGuiaSeleccionadas[id]);
+          const archivos = fotosGuiaSeleccionadas[id] || [];
+          const urls = [];
+          for(const archivo of archivos){
+            urls.push(await subirFoto(archivo));
           }
           const { error } = await sb.from('entregas_mb').update({
             estado: 'culminado',
             entregado_at: new Date().toISOString(),
             receptor_nombre: receptor,
             foto_evidencia_url: fotoMercUrl,
-            foto_guia_url: fotoGuiaUrl,
+            foto_guia_urls: urls.length ? urls : null,
           }).eq('id', id);
           if(error) throw error;
         }
