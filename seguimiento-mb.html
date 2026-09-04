@@ -5,39 +5,62 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Seguimiento de entregas - Mas Belleza</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#F5F4EF; --line:#DEDBCF; --ink:#2C2A22; --ink-soft:#7A7669;
-    --moss:#5C7A3B; --moss-bg:#EAF3DE; --amber:#B0782F; --amber-bg:#FAEEDA;
-    --blue:#0C447C; --blue-bg:#E6F1FB;
+    --paper:#F2F0E6; --paper-card:#FBFAF5; --line:#DCD7C6; --ink:#1B2430; --ink-soft:#63615A;
+    --amber:#B9812E; --green:#3F6B45; --rust:#9C4A3B;
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; padding:16px; max-width:640px; margin:0 auto;}
-  h1{font-size:17px; font-weight:600; margin:0 0 4px;}
-  .sub{font-size:12px; color:var(--ink-soft); margin:0 0 18px;}
-  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px;}
-  .lote-titulo{font-size:14px; font-weight:600; margin:0;}
-  .barra{height:6px; background:var(--line); border-radius:4px; overflow:hidden; margin:8px 0 4px;}
-  .barra-fill{height:100%; background:var(--moss);}
-  .progreso{font-size:12px; color:var(--ink-soft); margin-bottom:10px;}
-  .fila-entrega{padding:8px 0; border-top:1px solid var(--line); font-size:13px;}
-  .stamp{font-size:11px; font-weight:600; padding:2px 8px; border-radius:6px;}
-  .stamp.registrado{background:var(--paper); color:var(--ink-soft);}
-  .stamp.en_servicio{background:var(--amber-bg); color:var(--amber);}
-  .stamp.culminado{background:var(--moss-bg); color:var(--moss);}
-  .thumbs{display:flex; gap:6px; margin-top:6px;}
-  .thumbs img{width:50px; height:50px; object-fit:cover; border-radius:6px; border:1px solid var(--line);}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',-apple-system,sans-serif; padding:0 0 32px; max-width:640px; margin:0 auto;}
+  code, .mono{font-family:'IBM Plex Mono',monospace;}
+
+  .topbar{background:var(--ink); color:#F2F0E6; padding:20px 18px 22px;}
+  .topbar h1{font-size:17px; font-weight:600; margin:0 0 3px; letter-spacing:0.01em;}
+  .topbar .sub{font-size:12px; color:#B8BEC7; margin:0;}
+
+  .contenido{padding:16px;}
+
+  .card{background:var(--paper-card); border:1px solid var(--line); border-radius:4px; padding:16px; margin-bottom:14px;}
+
+  .lote-toggle{width:100%; background:none; border:none; padding:0; text-align:left; cursor:pointer; font-family:inherit; color:inherit;}
+  .lote-titulo{font-size:14px; font-weight:600; margin:0; font-family:'IBM Plex Mono',monospace; letter-spacing:0.01em;}
+  .barra{height:5px; background:var(--line); border-radius:0; overflow:hidden; margin:10px 0 5px;}
+  .barra-fill{height:100%; background:var(--green);}
+  .progreso{font-size:12px; color:var(--ink-soft); margin-bottom:0;}
+
+  .perforacion{display:flex; gap:5px; margin:14px 0 12px; align-items:center;}
+  .perforacion span{width:4px; height:4px; border-radius:50%; background:var(--line); flex-shrink:0;}
+  .perforacion .linea{flex:1; border-top:1px dashed var(--line);}
+
+  .fila-entrega{padding:12px 0; border-top:1px solid var(--line);}
+  .fila-entrega:first-child{border-top:none; padding-top:0;}
+  .fila-entrega .guia-num{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13.5px;}
+
+  .stamp{display:inline-block; font-size:10px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase;
+    padding:3px 8px; border:1.5px solid currentColor; border-radius:3px; font-family:'IBM Plex Mono',monospace; transform:rotate(-1.5deg);}
+  .stamp.registrado{color:var(--ink-soft);}
+  .stamp.en_servicio{color:var(--amber);}
+  .stamp.culminado{color:var(--green);}
+
+  .detalle{font-size:12px; color:var(--ink-soft); margin-top:6px; line-height:1.7;}
+  .thumbs{display:flex; gap:8px; margin-top:8px;}
+  .thumbs img{width:56px; height:56px; object-fit:cover; border-radius:2px; border:3px solid #fff; outline:1px solid var(--line); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.15);}
   .empty{text-align:center; color:var(--ink-soft); font-size:13px; padding:40px 0;}
 </style>
 </head>
 <body>
 
-<h1>Seguimiento de entregas</h1>
-<p class="sub">Mas Belleza · Peruvian Logistics International</p>
-<div id="app"></div>
+<div class="topbar">
+  <h1>Seguimiento de entregas</h1>
+  <p class="sub">Mas Belleza · Peruvian Logistics International</p>
+</div>
+<div class="contenido"><div id="app"></div></div>
 
 <div id="foto-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:999; padding:16px;">
   <div style="background:#fff; border-radius:12px; padding:14px; max-width:min(92vw,480px); text-align:center;">
+
     <img id="foto-grande-img" src="" alt="Foto" style="max-width:100%; max-height:65vh; border-radius:8px; margin-bottom:14px;">
     <div style="display:flex; gap:8px;">
       <button id="foto-cerrar" style="flex:1; padding:10px; border:1px solid var(--line); border-radius:8px; background:#fff;">Cerrar</button>
@@ -69,42 +92,61 @@ async function cargar(){
 
   if(!data || data.length===0){ app.innerHTML = '<div class="empty">Todavía no hay entregas registradas.</div>'; return; }
 
-  app.innerHTML = data.map(lote=>{
-    const entregas = lote.entregas_mb || [];
+  app.innerHTML = data.map((lote, i)=>{
+    const entregas = (lote.entregas_mb || []).slice().sort((a,b)=> (a.guia_remitente||'').localeCompare(b.guia_remitente||'', undefined, {numeric:true}));
     const entregadas = entregas.filter(e=>e.estado==='culminado').length;
     const total = entregas.length;
     const pct = total ? Math.round(entregadas/total*100) : 0;
     return `
       <div class="card">
-        <p class="lote-titulo">${lote.codigo} · ${fmtFecha(lote.fecha_programada)}</p>
-        <div class="barra"><div class="barra-fill" style="width:${pct}%;"></div></div>
-        <p class="progreso">${entregadas} de ${total} entregadas</p>
-        ${entregas.map(e=>`
-          <div class="fila-entrega">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>${e.guia_remitente || 'sin N°'}${e.nuestra_guia ? (' · nuestra '+e.nuestra_guia) : ''}</span>
-              <span class="stamp ${e.estado}">${e.estado}</span>
-            </div>
-            <div style="font-size:11px; color:var(--ink-soft); margin-top:4px; line-height:1.6;">
-              ${e.distrito_partida ? `Sale de: ${e.distrito_partida}<br>` : ''}
-              ${e.tienda_entrega ? `Va a: ${e.tienda_entrega}<br>` : ''}
-              ${e.chofer_nombre ? `Chofer: ${e.chofer_nombre}${e.placa ? ' · '+e.placa : ''}<br>` : ''}
-              ${e.factura_numero ? `Factura: ${e.factura_numero}<br>` : ''}
-            </div>
-            ${e.estado==='culminado' ? `
-              <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
-                Recibió: ${e.receptor_nombre || '—'}
-              </div>
-              <div class="thumbs">
-                ${(e.foto_guia_urls||[]).map(u=>`<img src="${u}" onclick="verFotoGrande('${u}')" style="cursor:pointer;">`).join('')}
-                ${e.foto_evidencia_url ? `<img src="${e.foto_evidencia_url}" onclick="verFotoGrande('${e.foto_evidencia_url}')" style="cursor:pointer;">` : ''}
-              </div>
-            ` : ''}
+        <button type="button" class="lote-toggle" data-lote-idx="${i}" style="width:100%; background:none; border:none; padding:0; text-align:left; cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <p class="lote-titulo">Reparto Lote · ${fmtFecha(lote.fecha_programada)}</p>
+            <span class="chevron" id="chevron-${i}" style="font-size:12px; color:var(--ink-soft);">▼</span>
           </div>
-        `).join('')}
+          <div class="barra"><div class="barra-fill" style="width:${pct}%;"></div></div>
+          <p class="progreso" style="margin-bottom:0;">${entregadas} de ${total} entregadas</p>
+        </button>
+        <div class="lote-contenido" id="lote-contenido-${i}" style="display:none;">
+          <div class="perforacion"><span></span><span></span><span></span><div class="linea"></div><span></span><span></span><span></span></div>
+          ${entregas.map(e=>`
+            <div class="fila-entrega">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="guia-num">${e.guia_remitente || 'sin N°'}${e.nuestra_guia ? (' · '+e.nuestra_guia) : ''}</span>
+                <span class="stamp ${e.estado}">${e.estado}</span>
+              </div>
+              <div class="detalle">
+                ${e.distrito_partida ? `Sale de: ${e.distrito_partida}<br>` : ''}
+                ${e.tienda_entrega ? `Va a: ${e.tienda_entrega}<br>` : ''}
+                ${e.chofer_nombre ? `Chofer: ${e.chofer_nombre}${e.placa ? ' · '+e.placa : ''}<br>` : ''}
+                ${e.factura_numero ? `Factura: ${e.factura_numero}<br>` : ''}
+              </div>
+              ${e.estado==='culminado' ? `
+                <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
+                  Recibió: ${e.receptor_nombre || '—'}
+                </div>
+                <div class="thumbs">
+                  ${(e.foto_guia_urls||[]).map(u=>`<img src="${u}" onclick="verFotoGrande('${u}')" style="cursor:pointer;">`).join('')}
+                  ${e.foto_evidencia_url ? `<img src="${e.foto_evidencia_url}" onclick="verFotoGrande('${e.foto_evidencia_url}')" style="cursor:pointer;">` : ''}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
       </div>
     `;
   }).join('');
+
+  document.querySelectorAll('.lote-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = btn.dataset.loteIdx;
+      const contenido = document.getElementById(`lote-contenido-${idx}`);
+      const chevron = document.getElementById(`chevron-${idx}`);
+      const abierto = contenido.style.display !== 'none';
+      contenido.style.display = abierto ? 'none' : 'block';
+      chevron.textContent = abierto ? '▼' : '▲';
+    });
+  });
 }
 
 function verFotoGrande(url){
