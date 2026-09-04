@@ -5,40 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Entregas Mas Belleza</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#F5F4EF; --line:#DEDBCF; --ink:#2C2A22; --ink-soft:#7A7669;
-    --moss:#5C7A3B; --moss-bg:#EAF3DE; --amber:#B0782F; --amber-bg:#FAEEDA;
+    --paper:#F2F0E6; --paper-card:#FBFAF5; --line:#DCD7C6; --ink:#1B2430; --ink-soft:#63615A;
+    --amber:#B9812E; --green:#3F6B45; --rust:#9C4A3B;
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; padding:16px;}
-  h1{font-size:16px; font-weight:600; margin:0 0 4px;}
-  .sub{font-size:12px; color:var(--ink-soft); margin:0 0 16px;}
-  select, input[type=text]{width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:#fff;}
-  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px;}
-  .tienda-titulo{font-size:13px; font-weight:600; margin:0 0 8px;}
-  label.fila{display:flex; align-items:center; gap:8px; padding:8px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; font-size:13px;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',-apple-system,sans-serif; padding:0 0 32px;}
+  .topbar{background:var(--ink); color:#F2F0E6; padding:20px 18px 22px;}
+  .topbar h1{font-size:17px; font-weight:600; margin:0 0 3px;}
+  .topbar .sub{font-size:12px; color:#B8BEC7; margin:0;}
+  .topbar .sub a{color:#fff;}
+  .contenido{padding:16px;}
+  select, input[type=text]{width:100%; padding:10px; border:1px solid var(--line); border-radius:3px; font-size:14px; background:#fff; font-family:inherit; color:var(--ink);}
+  .card{background:var(--paper-card); border:1px solid var(--line); border-radius:4px; padding:16px; margin-bottom:14px;}
+  .tienda-titulo{font-size:14px; font-weight:600; margin:0 0 10px; font-family:'IBM Plex Mono',monospace;}
+  label.fila{display:flex; align-items:center; gap:8px; padding:9px 10px; border:1px solid var(--line); border-radius:3px; margin-bottom:6px; font-size:13.5px; font-family:'IBM Plex Mono',monospace; font-weight:600; background:#fff;}
+  label.fila input[type=checkbox]{width:17px; height:17px; accent-color:var(--ink); flex-shrink:0;}
   .fotos-guia{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
-  .foto-btn{flex:1; min-width:100px; height:130px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:1px dashed var(--ink-soft); border-radius:8px; background:var(--paper); font-size:10px; color:var(--ink-soft); cursor:pointer; overflow:hidden; padding:0;}
-  .foto-btn.lista{border-style:solid; border-color:var(--moss); color:var(--moss);}
+  .foto-btn{flex:1; min-width:100px; height:130px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:1.5px dashed var(--ink-soft); border-radius:3px; background:var(--paper); font-size:10px; color:var(--ink-soft); cursor:pointer; overflow:hidden; padding:0;}
+  .foto-btn.lista{border-style:solid; border-color:var(--green); color:var(--green);}
   .foto-btn img{width:100%; height:100%; object-fit:cover;}
-  .foto-guia-item{margin-bottom:10px; padding:8px; border:1px solid var(--line); border-radius:8px;}
-  .foto-guia-nombre{font-size:12px; font-weight:600; margin-bottom:6px;}
-  .foto-guia-thumbs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;}
-  .foto-guia-thumbs img{width:56px; height:56px; object-fit:cover; border-radius:6px; border:1px solid var(--line);}
-  .btn-add-foto{font-size:11px; padding:6px 10px; border:1px dashed var(--ink-soft); border-radius:6px; background:var(--paper); color:var(--ink-soft); cursor:pointer;}
-  .foto-merc-btn{width:100%; height:80px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; border:1px dashed var(--ink-soft); border-radius:8px; background:var(--paper); font-size:12px; color:var(--ink-soft); cursor:pointer; overflow:hidden; padding:0;}
-  .foto-merc-btn.lista{border-style:solid; border-color:var(--moss); color:var(--moss);}
+  .foto-guia-item{margin-bottom:10px; padding:10px; border:1px solid var(--line); border-radius:3px; background:#fff;}
+  .foto-guia-nombre{font-size:12.5px; font-weight:600; margin-bottom:8px; font-family:'IBM Plex Mono',monospace;}
+  .foto-guia-thumbs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;}
+  .foto-guia-thumbs img{width:58px; height:58px; object-fit:cover; border-radius:2px; border:3px solid #fff; outline:1px solid var(--line); box-shadow:0 1px 3px rgba(0,0,0,0.15);}
+  .btn-add-foto{font-size:11.5px; padding:7px 12px; border:1.5px dashed var(--ink-soft); border-radius:3px; background:var(--paper); color:var(--ink-soft); cursor:pointer; font-weight:600;}
+  .foto-merc-btn{width:100%; height:90px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; border:1.5px dashed var(--ink-soft); border-radius:3px; background:var(--paper); font-size:12px; color:var(--ink-soft); cursor:pointer; overflow:hidden; padding:0; font-family:inherit;}
+  .foto-merc-btn.lista{border-style:solid; border-color:var(--green); color:var(--green);}
   .foto-merc-btn img{width:100%; height:100%; object-fit:cover;}
-  button.confirmar{width:100%; background:var(--ink); color:#fff; border:none; height:46px; border-radius:8px; font-size:14px; font-weight:600;}
+  button.confirmar{width:100%; background:var(--ink); color:#F2F0E6; border:none; height:48px; border-radius:3px; font-size:14px; font-weight:600; font-family:inherit; letter-spacing:0.01em;}
   button.confirmar:disabled{opacity:0.4;}
-  .stamp{font-size:11px; font-weight:600; padding:2px 8px; border-radius:6px; background:var(--amber-bg); color:var(--amber);}
+  .stamp{display:inline-block; font-size:10px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; padding:3px 8px; border:1.5px solid currentColor; border-radius:3px; font-family:'IBM Plex Mono',monospace; color:var(--amber); transform:rotate(-1.5deg);}
   .empty{text-align:center; color:var(--ink-soft); font-size:13px; padding:40px 0;}
 </style>
 </head>
 <body>
 
-<div id="app"></div>
+<div class="topbar">
+  <h1>Entregas Mas Belleza</h1>
+  <p class="sub">Peruvian Logistics International</p>
+</div>
+<div class="contenido"><div id="app"></div></div>
 
 <script>
 const SUPABASE_URL = 'https://wvnzifxqssisbkgfjgrx.supabase.co';
@@ -61,8 +71,7 @@ async function mostrarSelectorChofer(){
   const { data: choferes, error } = await sb.from('choferes_mb').select('id, nombre').order('nombre');
   if(error){ app.innerHTML = `<p>Error al cargar: ${error.message}</p>`; return; }
   app.innerHTML = `
-    <h1>Entregas Mas Belleza</h1>
-    <p class="sub">¿Quién eres?</p>
+    <p style="font-size:13.5px; color:var(--ink-soft); margin:0 0 10px;">¿Quién eres?</p>
     <select id="sel-chofer">
       <option value="">Selecciona tu nombre</option>
       ${choferes.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('')}
@@ -93,10 +102,11 @@ async function mostrarEntregas(){
     if(!grupos[clave]) grupos[clave] = [];
     grupos[clave].push(e);
   });
+  Object.values(grupos).forEach(lista=>lista.sort((a,b)=> (a.guia_remitente||'').localeCompare(b.guia_remitente||'', undefined, {numeric:true})));
 
   app.innerHTML = `
-    <h1>Hola, ${choferActual.nombre}</h1>
-    <p class="sub">Marca las guías que entregas juntas · <a href="#" id="cambiar-chofer">cambiar</a></p>
+    <p style="font-size:15px; font-weight:600; margin:0 0 3px;">Hola, ${choferActual.nombre}</p>
+    <p class="sub" style="font-size:12.5px; color:var(--ink-soft); margin:0 0 16px;">Marca las guías que entregas juntas · <a href="#" id="cambiar-chofer" style="color:var(--ink);">cambiar</a></p>
     ${Object.keys(grupos).length===0 ? '<div class="empty">No tienes entregas pendientes.</div>' : Object.entries(grupos).map(([tienda, lista])=>`
       <div class="card grupo-tienda" data-tienda="${tienda}">
         <div class="tienda-titulo">${tienda}</div>
