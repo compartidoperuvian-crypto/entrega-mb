@@ -63,7 +63,7 @@ function fmtFecha(fechaISO){
 async function cargar(){
   const { data, error } = await sb.from('lotes')
     .select(`id, codigo, fecha_programada, estado,
-      entregas_mb ( id, guia_remitente, estado, distrito_destino, tienda_entrega, entregado_at, receptor_nombre, foto_guia_urls, foto_evidencia_url )`)
+      entregas_mb ( id, guia_remitente, nuestra_guia, estado, distrito_partida, tienda_entrega, chofer_nombre, placa, factura_numero, entregado_at, receptor_nombre, foto_guia_urls, foto_evidencia_url )`)
     .order('fecha_programada', { ascending: false });
   if(error){ app.innerHTML = `<p>Error al cargar: ${error.message}</p>`; return; }
 
@@ -82,8 +82,14 @@ async function cargar(){
         ${entregas.map(e=>`
           <div class="fila-entrega">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>${e.guia_remitente || 'sin N°'} · ${e.tienda_entrega || e.distrito_destino || '—'}</span>
+              <span>${e.guia_remitente || 'sin N°'}${e.nuestra_guia ? (' · nuestra '+e.nuestra_guia) : ''}</span>
               <span class="stamp ${e.estado}">${e.estado}</span>
+            </div>
+            <div style="font-size:11px; color:var(--ink-soft); margin-top:4px; line-height:1.6;">
+              ${e.distrito_partida ? `Sale de: ${e.distrito_partida}<br>` : ''}
+              ${e.tienda_entrega ? `Va a: ${e.tienda_entrega}<br>` : ''}
+              ${e.chofer_nombre ? `Chofer: ${e.chofer_nombre}${e.placa ? ' · '+e.placa : ''}<br>` : ''}
+              ${e.factura_numero ? `Factura: ${e.factura_numero}<br>` : ''}
             </div>
             ${e.estado==='culminado' ? `
               <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
@@ -119,7 +125,9 @@ document.getElementById('foto-compartir').addEventListener('click', async ()=>{
       await navigator.share({ files: [file], title: 'Evidencia de entrega' });
       return;
     }
-  }catch(e){ /* sigue al respaldo de abajo */ }
+  }catch(e){
+    if(e.name === 'AbortError') return; // el usuario cerró el cuadro de compartir, no hacer nada
+  }
   window.open(url, '_blank');
 });
 
