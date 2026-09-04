@@ -6,29 +6,32 @@
 <title>Seguimiento de entregas - Mas Belleza</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#F2F0E6; --paper-card:#FBFAF5; --line:#DCD7C6; --ink:#1B2430; --ink-soft:#63615A;
-    --amber:#B9812E; --green:#3F6B45; --rust:#9C4A3B;
+    --paper:#F5F6FA; --paper-raised:#FFFFFF; --ink:#111827; --ink-soft:#64748B;
+    --navy:#0B1220; --amber:#4F46E5; --amber-bg:#EEF2FF;
+    --moss:#059669; --moss-bg:#ECFDF5; --steel:#0EA5E9; --steel-bg:#F0F9FF;
+    --alert:#DC2626; --alert-bg:#FEF2F2; --line:#E5E7EB;
+    --radius:10px; --shadow:0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.08);
   }
   *{box-sizing:border-box;}
   body{margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',-apple-system,sans-serif; padding:0 0 32px; max-width:640px; margin:0 auto;}
-  code, .mono{font-family:'IBM Plex Mono',monospace;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
 
-  .topbar{background:var(--ink); color:#F2F0E6; padding:20px 18px 22px;}
-  .topbar h1{font-size:17px; font-weight:600; margin:0 0 3px; letter-spacing:0.01em;}
-  .topbar .sub{font-size:12px; color:#B8BEC7; margin:0;}
+  .topbar{background:var(--navy); color:#F1F5F9; padding:22px 18px 24px;}
+  .topbar h1{font-size:17px; font-weight:600; margin:0 0 3px; letter-spacing:-0.01em;}
+  .topbar .sub{font-size:12px; color:#94A3B8; margin:0;}
 
-  .contenido{padding:16px;}
+  .contenido{padding:18px;}
 
-  .card{background:var(--paper-card); border:1px solid var(--line); border-radius:4px; padding:16px; margin-bottom:14px;}
+  .card{background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:14px;}
 
   .lote-toggle{width:100%; background:none; border:none; padding:0; text-align:left; cursor:pointer; font-family:inherit; color:inherit;}
-  .lote-titulo{font-size:14px; font-weight:600; margin:0; font-family:'IBM Plex Mono',monospace; letter-spacing:0.01em;}
-  .barra{height:5px; background:var(--line); border-radius:0; overflow:hidden; margin:10px 0 5px;}
-  .barra-fill{height:100%; background:var(--green);}
-  .progreso{font-size:12px; color:var(--ink-soft); margin-bottom:0;}
+  .lote-titulo{font-size:13.5px; font-weight:600; margin:0; font-family:'IBM Plex Mono',monospace;}
+  .barra{height:6px; background:var(--line); border-radius:20px; overflow:hidden; margin:10px 0 6px;}
+  .barra-fill{height:100%; background:var(--moss); border-radius:20px;}
+  .progreso{font-size:11.5px; color:var(--ink-soft); margin-bottom:0;}
 
   .perforacion{display:flex; gap:5px; margin:14px 0 12px; align-items:center;}
   .perforacion span{width:4px; height:4px; border-radius:50%; background:var(--line); flex-shrink:0;}
@@ -36,17 +39,16 @@
 
   .fila-entrega{padding:12px 0; border-top:1px solid var(--line);}
   .fila-entrega:first-child{border-top:none; padding-top:0;}
-  .fila-entrega .guia-num{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13.5px;}
+  .fila-entrega .guia-num{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13px;}
 
-  .stamp{display:inline-block; font-size:10px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase;
-    padding:3px 8px; border:1.5px solid currentColor; border-radius:3px; font-family:'IBM Plex Mono',monospace; transform:rotate(-1.5deg);}
-  .stamp.registrado{color:var(--ink-soft);}
-  .stamp.en_servicio{color:var(--amber);}
-  .stamp.culminado{color:var(--green);}
+  .stamp{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; padding:3px 9px; border-radius:4px; border:1.6px dashed currentColor; transform:rotate(-3deg); white-space:nowrap;}
+  .stamp.registrado{color:var(--ink-soft); background:#64748B14;}
+  .stamp.en_servicio{color:var(--steel); background:var(--steel-bg);}
+  .stamp.culminado{color:var(--moss); background:var(--moss-bg);}
 
   .detalle{font-size:12px; color:var(--ink-soft); margin-top:6px; line-height:1.7;}
   .thumbs{display:flex; gap:8px; margin-top:8px;}
-  .thumbs img{width:56px; height:56px; object-fit:cover; border-radius:2px; border:3px solid #fff; outline:1px solid var(--line); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.15);}
+  .thumbs img{width:56px; height:56px; object-fit:cover; border-radius:6px; border:3px solid #fff; outline:1px solid var(--line); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.15);}
   .empty{text-align:center; color:var(--ink-soft); font-size:13px; padding:40px 0;}
 </style>
 </head>
@@ -59,7 +61,7 @@
 <div class="contenido"><div id="app"></div></div>
 
 <div id="foto-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:999; padding:16px;">
-  <div style="background:#fff; border-radius:12px; padding:14px; max-width:min(92vw,480px); text-align:center;">
+  <div style="background:#fff; border-radius:var(--radius); padding:14px; max-width:min(92vw,480px); text-align:center; box-shadow:var(--shadow);">
 
     <img id="foto-grande-img" src="" alt="Foto" style="max-width:100%; max-height:65vh; border-radius:8px; margin-bottom:14px;">
     <div style="display:flex; gap:8px;">
@@ -81,6 +83,14 @@ function fmtFecha(fechaISO){
   if(!fechaISO) return '';
   const [aaaa, mm, dd] = fechaISO.split('-');
   return `${dd}/${mm}/${aaaa}`;
+}
+
+function fmtHoraEntrega(timestampISO){
+  if(!timestampISO) return '';
+  const d = new Date(timestampISO);
+  const fecha = d.toLocaleDateString('es-PE', { day:'2-digit', month:'2-digit', year:'numeric', timeZone:'America/Lima' });
+  const hora = d.toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'America/Lima' });
+  return `${fecha} · ${hora}`;
 }
 
 async function cargar(){
@@ -123,7 +133,7 @@ async function cargar(){
               </div>
               ${e.estado==='culminado' ? `
                 <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">
-                  Recibió: ${e.receptor_nombre || '—'}
+                  Recibió: ${e.receptor_nombre || '—'}${e.entregado_at ? ` · ${fmtHoraEntrega(e.entregado_at)}` : ''}
                 </div>
                 <div class="thumbs">
                   ${(e.foto_guia_urls||[]).map(u=>`<img src="${u}" onclick="verFotoGrande('${u}')" style="cursor:pointer;">`).join('')}
